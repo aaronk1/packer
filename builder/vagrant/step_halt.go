@@ -8,45 +8,15 @@ import (
 	"github.com/hashicorp/packer/packer"
 )
 
-type StepUp struct {
+type StepHalt struct {
 	TeardownMethod string
 	Provider       string
 	GlobalID       string
 }
 
-func (s *StepUp) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
+func (s *StepHalt) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	driver := state.Get("driver").(VagrantDriver)
 	ui := state.Get("ui").(packer.Ui)
-
-	ui.Say("Calling Vagrant Up...")
-
-	var args []string
-	if s.GlobalID != "" {
-		args = append(args, s.GlobalID)
-	}
-
-	if s.Provider != "" {
-		args = append(args, fmt.Sprintf("--provider=%s", s.Provider))
-	}
-
-	_, _, err := driver.Up(args)
-
-	if err != nil {
-		state.Put("error", err)
-		return multistep.ActionHalt
-	}
-
-	return multistep.ActionContinue
-}
-
-func (s *StepUp) Cleanup(state multistep.StateBag) {
-	driver := state.Get("driver").(VagrantDriver)
-	ui := state.Get("ui").(packer.Ui)
-
-	// there are no errors, so we've already successfully destroyed the box.
-	if _, ok := state.GetOk("error"); !ok {
-		return
-	}
 
 	ui.Say(fmt.Sprintf("%sing Vagrant box...", s.TeardownMethod))
 
@@ -60,8 +30,14 @@ func (s *StepUp) Cleanup(state multistep.StateBag) {
 	} else {
 		// Should never get here because of template validation
 		state.Put("error", fmt.Errorf("Invalid teardown method selected; must be either halt, suspend, or destory."))
+		return multistep.ActionHalt
 	}
 	if err != nil {
 		state.Put("error", fmt.Errorf("Error halting Vagrant machine; please try to do this manually"))
+		return multistep.ActionHalt
 	}
+	//continue
+	return multistep.ActionContinue
 }
+
+func (s *StepHalt) Cleanup(state multistep.StateBag) {}
