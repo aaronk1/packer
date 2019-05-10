@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -70,8 +71,14 @@ func (d *Vagrant_2_2_Driver) Destroy(id string) error {
 
 // Calls "vagrant package"
 func (d *Vagrant_2_2_Driver) Package(args []string) error {
-	args = append(args, "--output", "package.box")
-	_, _, err := d.vagrantCmd(append([]string{"package"}, args...)...)
+	boxPath := filepath.Join(d.VagrantCWD, "package.box")
+	relPath, err := filepath.Rel(d.VagrantCWD, boxPath)
+	if err != nil {
+		boxPath = relPath
+	}
+
+	args = append(args, "--output", boxPath)
+	_, _, err = d.vagrantCmd(append([]string{"package"}, args...)...)
 	return err
 }
 
