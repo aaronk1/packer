@@ -43,11 +43,6 @@ func (s *StepUp) Cleanup(state multistep.StateBag) {
 	driver := state.Get("driver").(VagrantDriver)
 	ui := state.Get("ui").(packer.Ui)
 
-	// there are no errors, so we've already successfully destroyed the box.
-	if _, ok := state.GetOk("error"); !ok {
-		return
-	}
-
 	ui.Say(fmt.Sprintf("%sing Vagrant box...", s.TeardownMethod))
 
 	var err error

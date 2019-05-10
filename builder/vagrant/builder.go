@@ -234,18 +234,12 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			SSHConfig: b.config.SSHConfig.Comm.SSHConfigFunc(),
 		},
 		new(common.StepProvision),
-		&StepHalt{
-			TeardownMethod: b.config.TeardownMethod,
-			Provider:       b.config.Provider,
-			GlobalID:       b.config.GlobalID,
-		},
 		&StepPackage{
 			SkipPackage: b.config.SkipPackage,
 			Include:     b.config.PackageInclude,
 			Vagrantfile: b.config.OutputVagrantfile,
 			GlobalID:    b.config.GlobalID,
-		},
-	)
+		})
 
 	// Run the steps.
 	b.runner = common.NewRunnerWithPauseFn(steps, b.config.PackerConfig, ui, state)
